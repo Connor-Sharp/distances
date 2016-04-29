@@ -215,7 +215,7 @@ for i in matched_dictionary:
 matched_array=clean_array        
 log_file.write(str("Total number of hits found:"+str(len(matched_array))))
         
-from function_others import sequence_finder5
+from trail_holder import sequence_finder5
 sequence_finder5(matched_array)
 
 log_file.write("\nUsed getorf (EMBOSS) to find protein sequences within open reading frames")
