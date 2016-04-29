@@ -580,3 +580,211 @@ def addprofiles(filename, OBJ_array):
 ############################################################################
     
 ############################################################################ 
+def sequence_finder5(object_array):
+#will return translated sequences of proteins found in the start variable from the files stored on harddrive. If files are not on harddrive directory must be changed-found in function holder.
+    import sys
+    import os
+    for search in object_array:
+
+        database=search.database
+        print database
+        isolate_search=search.identifier
+        print isolate_search
+        if database=="PATRIC":
+            directory="/run/media/csharp/Dell_USB_Portable_HDD/ftp.patricbrc.org/patric2/genomes/genomes"
+            
+        else:
+            directory= "/run/media/csharp/Dell_USB_Portable_HDD/All_contigs"
+            
+        transeq="./../Emboss/EMBOSS-6.6.0/emboss/transeq -sequence" # runs transeq on the command line
+        transeqend=" -outseq $p'_6frame.fa' -clean -table 11 -frame 6"   
+        
+        getorf="./../Emboss/EMBOSS-6.6.0/emboss/getorf -sequence"
+        getorfend=" -outseq 'tester.txt' -table 11 -find 1 " #produces START-STOP nucleotide translations(could change to zero and produce protein translations??)
+        getorfend2=" -outseq 'tester2.txt' -table 11 -find 4 -flanking 400" # finds regions flanking start codons
+        
+        
+        endposHNH=search.HNHstop
+    
+        endposIMM=search.IMMstop
+        startposHNH=search.HNHstart
+        startposIMM=search.IMMstart
+        
+        
+        HNHcontig=search.HNHcontig
+        
+        IMMcontig=search.IMMcontig
+        if database==("PATRIC"):
+           
+           parts=HNHcontig.split("/")
+           filename=str(parts[9])
+           filename2=str(parts[9]+"/"+parts[9]+".fna")
+           
+        else:
+            parts=HNHcontig.split("_")
+    
+            filename2=str(parts[0]+"_"+parts[1]+"_"+parts[2]+"_contigs.fa")
+            filename=str(parts[0]+"_"+parts[1]+"_"+parts[2]+"_contigs.fa")
+        
+        collect=""
+        frameHNH=int(HNHcontig[-1:])
+        frameIMM=int(IMMcontig[-1:])
+        
+        
+        print filename
+        for file in os.listdir(str(directory)):
+            
+            if file== filename:
+                
+                file_handle=open(str(directory+"/" + filename2),"r")
+               
+                for item in file_handle:
+                    collect=collect+item
+                   
+                parts=collect.split(">") 
+                for i in parts:
+                       
+                    if database != "PATRIC":
+                        
+                        if i[:len(HNHcontig[:-2])]==HNHcontig[:-2]:
+                           
+                            string_safe=str(i[len(HNHcontig):])
+                            
+                           
+                            break
+                    else:
+                        
+                        if isolate_search in i[:50] and database == "PATRIC":
+                            print i[:50], isolate_search
+                            j=i.split("]\n")
+                            
+                            string_safe=str(j[1])
+                file_handle.close()
+                file_handle8=open("seqtest.fa","w")
+                file_handle8.write(str(">Seqtester\n"))
+                file_handle8.write(string_safe)
+                file_handle8.close()
+                
+                command=str(transeq+" "+directory+"/" + filename2+transeqend)
+                command_getorf=str(getorf+" "+"seqtest.fa"+getorfend)
+                command_getorf2=str(getorf+" "+"seqtest.fa"+getorfend2)                
+                
+                os.system(command_getorf)
+                os.system(command)
+                os.system(command_getorf2)
+
+                file_handle=open(str("_6frame.fa"),"r")
+                
+                for item in file_handle:
+                    collect=collect+item
+                    
+                parts=collect.split(">") 
+                
+                for i in parts[1:]:
+                    
+                        
+                    if database != "PATRIC":
+                        if i[:len(HNHcontig)]==HNHcontig:
+                            #print i[-1:len(contig[:-2]):-1]
+                            string=str(i[len(HNHcontig):]).replace("\n","")
+                            string=string.replace(">","")
+                            string=string.replace(" ","")
+                            
+                        if i[:len(IMMcontig)]==IMMcontig:
+                            #print i[-1:len(contig[:-2]):-1]
+                            stringIMM=str(i[len(IMMcontig):]).replace("\n","")
+                            stringIMM=stringIMM.replace(">","")
+                            stringIMM=stringIMM.replace(" ","")
+                            
+                    else:
+                        
+                        test="fail"
+                        test2="fail"
+                        if str(i[:len(isolate_search)+2])==str(isolate_search+"_"+str(frameHNH)) and database == "PATRIC":
+                            j=i.split("]\n")
+                            
+                            string=str(j[1]).replace("\n","")
+                            string=string.replace("\t","")
+                            test="PASS"
+                            
+                            
+                        if str(i[:len(isolate_search)+2])==str(isolate_search+"_"+str(frameIMM)) and database == "PATRIC":
+                            j=i.split("]\n")
+                            stringIMM=str(j[1]).replace("\n","")
+                            stringIMM=stringIMM.replace("\t","") 
+                            test2="PASS"
+                        if test=="PASS" and test2=="PASS":
+                        
+                            break
+                        
+                file_handle.close()            
+                
+                
+                    
+                collect2=""
+                file_handle5=open("tester.txt",'r')
+                
+                for items in file_handle5:
+                    collect2=collect2+items
+                parts2=collect2.split(">")
+                #parts2.sort(key=len, reverse=True)
+                test="FAIL"
+                test2="FAIL"
+                for k in parts2[1:]:
+                    if k !="":
+                        l=k.replace("\n","")
+                        if str(string[startposHNH+10:endposHNH-10]) in l:
+                             
+                            N=l.replace("(REVERSE SENSE)","")
+                            M=N.split("]")
+                            positions=M[0].split(" ")
+                            start=int(positions[1].replace("[",""))
+                            end=int(positions[3])
+                            search.contig_start=end
+                            search.contig_end=start
+                            file_tester2=open("tester2.txt","r")
+                            tester2_string=str("Around codon at "+str(search.contig_start)+".")
+                            tester2_string2=str("Around codon at "+str(search.contig_end)+".")
+                            collect4=""
+                            for line in file_tester2:
+                               collect4+=line
+                               
+                            parts_prom=collect4.split(">")
+                            for next_iter in parts_prom:
+                                if tester2_string in next_iter or tester2_string2 in next_iter:
+                                    parts_prom_again=next_iter.split(".")
+                                    search.contig=parts_prom_again[1].replace("\n","")
+                                    break    
+                            file_tester2.close()
+                            M=M[1].replace("\n","")
+                            test="PASS"
+                            search.HNHsequence=M
+                        if str(stringIMM[startposIMM+5:endposIMM-5]) in l:
+                            N=l.replace("(REVERSE SENSE)","")
+                            M=N.split("]")
+                            #print M, str(stringIMM[startposIMM+5:endposIMM-5])
+                            M=M[1].replace("\n","")
+                            test2="PASS"
+                            search.IMMsequence=M
+                        if test=="PASS" and test2=="PASS":
+                           # y2="rm rm -f 'tester.txt'"
+                            #os.system(y2)
+                            file_handle5.close()
+                            break
+                        
+                if search.HNHsequence=="":
+                    search.HNHsequence=str(string[startposHNH-500:endposHNH+4])
+                    search.finder="FORCED"
+                    if search.HNHsequence=="":
+                         search.HNHsequence=str(string[startposHNH-200:endposHNH+4])
+                         search.finder="FORCED"
+                if search.IMMsequence=="":
+                    search.IMMsequence=str(string[startposIMM-40:endposHNH+50])
+                
+                y="rm rm -f '_6frame.fa'"
+               
+                os.system(y)
+
+#####################################################################################################
+
+########################################################################################################
