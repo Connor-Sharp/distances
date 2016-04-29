@@ -788,3 +788,29 @@ def sequence_finder5(object_array):
 #####################################################################################################
 
 ########################################################################################################
+##################################################################################
+
+#################################################################################
+
+def addBIGSspecies(object_array):
+    # finds the species information for a BIGS hit from a csv file and adds it to i.species
+    Isolate2species=defaultdict(list)
+    Species2isolate=defaultdict(list)
+    file_handle2=open("IsolatesSpecies2.csv","r")
+    for line in file_handle2:
+        things=line.split(",")
+        #print things[1]
+        Isolate2species[things[0]].append(things[1].replace(" \n",""))
+        Species2isolate[things[0]].append(things[2].replace(" \n",""))
+    file_handle2.close()
+    for i in object_array:
+        if i.database=="BIGS":
+            number=i.identifier.replace("ISOLATE_","")
+            if Isolate2species[number] != [] :
+                i.Species=(Species2isolate[number][0]).replace(" ","_")
+                string=(Isolate2species[number][0]).replace(" ","")
+                i.isolate=str((Species2isolate[number][0]).replace(" ","_")+"_" +string.replace("\n",""))
+    return object_array          
+###############################################################################
+                
+###############################################################################
