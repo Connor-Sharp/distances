@@ -1,13 +1,13 @@
 
 
 Input raw hmmoutput
-#INPUT_FILE:	/home/csharp/OUTPUT_COL_E5
+#INPUT_FILE:	/HMMER3_output_file
 
 
 Out put parsed hmm file
-#OUTPUT_FILE:	/home/csharp/windowsstuff/parsed_PATRIC_COLICIN_E5.csv
+#OUTPUT_FILE:	/OUTPUT.csv
 
-#DATABASE:	PATRIC
+#DATABASE:	PATRIC_OR_BIGS
 
 
 
@@ -17,9 +17,9 @@ Profile accessions (Copy and paste for number of linked genes to be searched)
 
 
 
-#NAME:	Colicin_E5
-#LEFT:	Colicin_C
-#RIGHT:	ImmE5	
+#NAME:	PAIR_NAME
+#LEFT:	UPSTREAM
+#RIGHT:	DOWNSTREAM
 #STRAND(POS/NEG):	POS
 
 
