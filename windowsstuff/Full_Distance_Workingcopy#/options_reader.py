@@ -179,7 +179,7 @@ for i in options_dict.keys():
     print i
     [forward,reverse]=plot_distance(object_array, i, date)
 
-from function_holder import addBIGSspecies
+from trail_holder import addBIGSspecies
 object_array=addBIGSspecies(object_array)
 
 from trail_holder import analyse_dist
